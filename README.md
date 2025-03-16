@@ -38,7 +38,7 @@ This package contains a method to generate all permutations of a multiset. The m
 0122
 1022
 2102
-v```
+```
 
 ```bash
 % zig-out/bin/mp_count 0 1 2 2
