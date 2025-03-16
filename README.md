@@ -21,7 +21,11 @@ This package contains a method to generate all permutations of a multiset. The m
 ## Usage
 
 ``` bash
-% mp_list 0 1 2 2
+% zig build -Doptimize=ReleaseFast
+```
+
+```bash
+% zig-out/bin/mp_list 0 1 2 2
 2210
 0221
 2021
@@ -37,24 +41,24 @@ This package contains a method to generate all permutations of a multiset. The m
 v```
 
 ```bash
-% mp_count 0 1 2 2
+% zig-out/bin/mp_count 0 1 2 2
 12
 ```
 
 ### Basic Zig API
 
-Provide `letters: @Vector(16, u8)` with entries in the *highest-order* / rightmost N positions.
+Provide `symbols: @Vector(16, u8)` with entries in the *highest-order* / rightmost N positions.
 
 ```zig
 const MultiPermute = @import("./MultiPermute.zig");
 
 pub fn main() {
     const N = 12;
-    var letters = @Vector(16, u8){0,0,0,0,65,65,66,66,67,67,67,68,68,69,70,71};
+    var symbols = @Vector(16, u8){0,0,0,0,65,65,66,66,67,67,67,68,68,69,70,71};
     
-    const count = MultiPermute.countMultiset(letters, N);
+    const count = MultiPermute.countMultiset(symbols, N);
     
-    MultiPermute.visitMultiset(letters, N, &myVisitor);
+    MultiPermute.visitMultiset(symbols, N, &myVisitor);
 }
 
 fn myVisitor(seq: @Vector(16, u8)) void {
@@ -74,10 +78,10 @@ const MultiPermute = @import("./MultiPermute.zig");
 
 pub fn main() {
     const N = 12;
-    var letters = @Vector(16, u8){0,0,0,0,65,65,66,66,67,67,67,68,68,69,70,71};
+    var symbols = @Vector(16, u8){0,0,0,0,65,65,66,66,67,67,67,68,68,69,70,71};
 
     var mp12: MultiPermute(N) = .init();
-    mp12.initLetters(letters);
+    mp12.initLetters(symbols);
 
     while (mp12.nextSeq()) |seq| {
         // do something with seq...
@@ -121,10 +125,10 @@ const Visitor = VisitorT();
 
 pub fn main() {
     const N = 12;
-    var letters = @Vector(16, u8){0,0,0,0,65,65,66,66,67,67,67,68,68,69,70,71};
+    var symbols = @Vector(16, u8){0,0,0,0,65,65,66,66,67,67,67,68,68,69,70,71};
 
     var mp12: MultiPermuteWithVisitor(N, Visitor) = .initVisitor(.{});
-    mp12.initLetters(letters);
+    mp12.initLetters(symbols);
 
     while (mp12.nextMatch()) |seq| {
         // do something with seq...
