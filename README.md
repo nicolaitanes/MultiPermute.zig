@@ -4,7 +4,7 @@ Efficient multiset permutations,
 adapted from https://github.com/ekg/multipermute
 and optimized for speed and WebAssembly compatibility.
 
-Does not work with sequences longer than 16.
+Does not work with sequences longer than 1024.
 
 ## Overview
 
@@ -47,29 +47,31 @@ This package contains a method to generate all permutations of a multiset. The m
 
 ### Basic Zig API
 
-Provide `symbols: @Vector(16, u8)` with entries in the *highest-order* / rightmost N positions.
-
 ```zig
 const MultiPermute = @import("./MultiPermute.zig");
 
 pub fn main() {
     const N = 12;
-    var symbols = @Vector(16, u8){0,0,0,0,65,65,66,66,67,67,67,68,68,69,70,71};
+    var symbols: [_]u8 = .{65,65,66,66,67,67,67,68,68,69,70,71};
     
-    const count = MultiPermute.countMultiset(symbols, N);
+    const count = MultiPermute.countMultiset(symbols[0..N]);
     
-    MultiPermute.visitMultiset(symbols, N, &myVisitor);
+    MultiPermute.visitMultiset(symbols[0..N], &myVisitor);
 }
 
-fn myVisitor(seq: @Vector(16, u8)) void {
+fn myVisitor(seq: []const u8) void {
     // do something with seq...
-    // if N < 16, the first (16 - N) items are preserved from the input vector
 }
 ```
 
-### Full Zig API
+### Full Zig API (3 <= N <= 16)
 
-Sequence length `N` must be known at compile time, between 3 and 16 (inclusive).
+#### Types
+
+- `MultiPermute()`: generates permutations of up to 1024 symbols
+- `MultiPermuteWithVisitor(Visitor)`: uses a visitor to find or count matching permutations
+- `MultiPermuteSmall(N)`: keeps the whole sequence in a register (avoids memory accesses), when sequence length `N` is known at compile time and between 3 and 16 (inclusive),
+- `MultiPermuteSmallWithVisitor(N, Visitor)`
 
 #### Iterating through permutations
 
@@ -78,9 +80,27 @@ const MultiPermute = @import("./MultiPermute.zig");
 
 pub fn main() {
     const N = 12;
+    var symbols: [_]u8 = .{65,65,66,66,67,67,67,68,68,69,70,71};
+
+    var mp12: MultiPermute() = .init();
+    mp12.initLetters(symbols[0..N]);
+
+    while (mp12.nextSeq()) |seq| {
+        // do something with seq...
+    }
+}
+```
+
+#### Iterating through permutations (small N)
+
+```zig
+const MultiPermute = @import("./MultiPermute.zig");
+
+pub fn main() {
+    const N = 12;
     var symbols = @Vector(16, u8){0,0,0,0,65,65,66,66,67,67,67,68,68,69,70,71};
 
-    var mp12: MultiPermute(N) = .init();
+    var mp12: MultiPermuteSmall(N) = .init();
     mp12.initLetters(symbols);
 
     while (mp12.nextSeq()) |seq| {
@@ -89,7 +109,7 @@ pub fn main() {
 }
 ```
 
-#### Search with custom Visitor
+#### Search with custom Visitor (small N)
 
 Symbol order is kept in a linked list; the algorithm can spend a significant amount of time traversing the nodes to read each permutation.
 
@@ -127,7 +147,7 @@ pub fn main() {
     const N = 12;
     var symbols = @Vector(16, u8){0,0,0,0,65,65,66,66,67,67,67,68,68,69,70,71};
 
-    var mp12: MultiPermuteWithVisitor(N, Visitor) = .initVisitor(.{});
+    var mp12: MultiPermuteSmallWithVisitor(N, Visitor) = .initVisitor(.{});
     mp12.initLetters(symbols);
 
     while (mp12.nextMatch()) |seq| {
@@ -135,7 +155,3 @@ pub fn main() {
     }
 }
 ```
-
-## multiset combinations
-
-Another repository contains code for multiset combinations: [multichoose](https://npmjs.org/package/multichoose) [or on github](https://github.com/ekg/multichoose).
