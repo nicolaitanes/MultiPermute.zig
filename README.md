@@ -64,7 +64,7 @@ fn myVisitor(seq: []const u8) void {
 }
 ```
 
-### Full Zig API (3 <= N <= 16)
+### Full Zig API
 
 #### Types
 
@@ -91,7 +91,7 @@ pub fn main() {
 }
 ```
 
-#### Iterating through permutations (small N)
+#### Iterating through permutations (3 <= N <= 16)
 
 ```zig
 const MultiPermute = @import("./MultiPermute.zig");
@@ -109,11 +109,11 @@ pub fn main() {
 }
 ```
 
-#### Search with custom Visitor (small N)
+#### Search with custom Visitor (3 <= N <= 16)
 
 Symbol order is kept in a linked list; the algorithm can spend a significant amount of time traversing the nodes to read each permutation.
 
-If some or all output sequences are not actually needed (e.g. when counting permutations), use MultiPermuteWithVisitor to short-circuit list traversal:
+If some or all output sequences are not actually needed (e.g. when counting permutations), use `MultiPermute[Small]WithVisitor` to short-circuit list traversal:
 
 ```zig
 const MultiPermute = @import("./MultiPermute.zig");
