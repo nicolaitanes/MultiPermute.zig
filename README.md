@@ -123,7 +123,7 @@ fn VisitorT() type {
         const Self = @This();
 
         // *optional* return true to skip all list traversal (e.g. for counting).
-        // pub inline fn skipBeforeReading(self: *const Self) bool {
+        pub inline fn skipBeforeReading(self: *const Self) bool {
             return shouldBeSkipped(x, i);
         }
 

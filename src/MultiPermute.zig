@@ -63,7 +63,6 @@ pub const MaxN = 1024;
 /// end while
 ///
 /// Adapted from https://github.com/ekg/multipermute
-/// and optimized for fast WebAssembly, with a limit of 3-16 elements in the multiset.
 pub fn MultiPermute() type {
     return MultiPermuteWithVisitor(struct {});
 }
