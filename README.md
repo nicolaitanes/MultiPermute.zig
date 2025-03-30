@@ -47,8 +47,12 @@ This package contains a method to generate all permutations of a multiset. The m
 
 ### Basic Zig API
 
+```
+zig fetch --save 'https://github.com/nicolaitanes/MultiPermute.zig/archive/refs/tags/v1.0.0.tar.gz'
+```
+
 ```zig
-const MultiPermute = @import("./MultiPermute.zig");
+const MultiPermute = @import("MultiPermute");
 
 pub fn main() {
     const N = 12;
@@ -73,10 +77,28 @@ fn myVisitor(seq: []const u8) void {
 - `MultiPermuteSmall(N)`: keeps the whole sequence in a register (avoids memory accesses), when sequence length `N` is known at compile time and between 3 and 16 (inclusive),
 - `MultiPermuteSmallWithVisitor(N, Visitor)`
 
+#### Module import
+
+```
+zig fetch --save 'https://github.com/nicolaitanes/MultiPermute.zig/archive/refs/tags/v1.0.0.tar.gz'
+```
+
+zig.build:
+
+```
+    const package = b.dependency("MultiPermute", .{
+        .target = target,
+        .optimize = optimize,
+    });
+    const module = package.module("MultiPermute")
+
+    myexe.root_module.addImport("MultiPermute", module);
+```
+
 #### Iterating through permutations
 
 ```zig
-const MultiPermute = @import("./MultiPermute.zig");
+const MultiPermute = @import("MultiPermute");
 
 pub fn main() {
     const N = 12;
@@ -94,7 +116,7 @@ pub fn main() {
 #### Iterating through permutations (3 <= N <= 16)
 
 ```zig
-const MultiPermute = @import("./MultiPermute.zig");
+const MultiPermute = @import("MultiPermute");
 
 pub fn main() {
     const N = 12;
@@ -116,7 +138,7 @@ Symbol order is kept in a linked list; the algorithm can spend a significant amo
 If some or all output sequences are not actually needed (e.g. when counting permutations), use `MultiPermute[Small]WithVisitor` to short-circuit list traversal:
 
 ```zig
-const MultiPermute = @import("./MultiPermute.zig");
+const MultiPermute = @import("MultiPermute");
 
 fn VisitorT() type {
     return struct {
