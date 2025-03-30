@@ -156,7 +156,12 @@ inline fn nextFrom(h: ?*MultiPermuteNode, i: ?*MultiPermuteNode, j: ?*MultiPermu
     const t = s.n.?;
     s.n = t.n;
     t.n = h.?;
-    const iOut = if (t.v < h.?.v) t else i.?;
+    var iOut = i.?;
+
+    if (t.v < h.?.v) {
+        @branchHint(.unlikely);
+        iOut = t;
+    }
 
     return [_]?*MultiPermuteNode{ t, iOut, iOut.n.? };
 }
@@ -387,34 +392,59 @@ pub fn MultiPermuteSmallWithVisitor(comptime N: u32, comptime Visitor: type) typ
             const canMatchQuad = comptime std.meta.hasMethod(Visitor, "matchQuad");
             const Nquadded = 4 * (N / 4);
 
-            var symbols: @Vector(16, u8) = @bitCast(input);
-            var x: u32 = 0;
-
             const canSkip = comptime std.meta.hasMethod(Visitor, "skipBeforeReading");
             if (canSkip and self.visitor.skipBeforeReading())
                 return input;
 
-            inline for (0..N) |j| {
-                const r: u32 = h.?.r;
-                symbols[MaxNsmall - j - 1] = @intCast(r);
-                if (j < (N - 1))
-                    h = h.?.n;
+            var x: u32 = 0;
 
-                // accumulate up to 4 bytes in x
-                if (canMatchQuad and j < Nquadded) {
+            if (N == Nquadded) {
+                var quads: @Vector(4, u32) = @bitCast(input);
+
+                inline for (0..N) |j| {
+                    const r: u32 = h.?.r;
+                    if (j < (N - 1))
+                        h = h.?.n;
+
+                    // accumulate up to 4 bytes in x
                     x += r;
                     const i = Nquadded - j - 1;
                     if ((i % 4) != 0) {
                         x = x << 8;
                     } else if (!self.visitor.matchQuad(x, 3 - j / 4)) {
                         return null;
-                    } else if (i != 0) {
+                    } else {
+                        quads[3 - j / 4] = x;
                         x = 0;
                     }
                 }
-            }
 
-            return symbols;
+                return @bitCast(quads);
+            } else {
+                var symbols: @Vector(16, u8) = input;
+
+                inline for (0..N) |j| {
+                    const r: u32 = h.?.r;
+                    symbols[MaxNsmall - j - 1] = @intCast(r);
+                    if (j < (N - 1))
+                        h = h.?.n;
+
+                    // accumulate up to 4 bytes in x
+                    if (canMatchQuad and j < Nquadded) {
+                        x += r;
+                        const i = Nquadded - j - 1;
+                        if ((i % 4) != 0) {
+                            x = x << 8;
+                        } else if (!self.visitor.matchQuad(x, 3 - j / 4)) {
+                            return null;
+                        } else if (i != 0) {
+                            x = 0;
+                        }
+                    }
+                }
+
+                return symbols;
+            }
         }
 
         /// Iterates through permutations, returning the first one for which `Visitor.match(seq)` is true.
